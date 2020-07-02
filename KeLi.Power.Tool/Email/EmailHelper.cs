@@ -17,12 +17,7 @@ namespace KeLi.Power.Tool.Email
         /// <param name="mail"></param>
         public static void SendMail(this FromerInfo former, MailInfo mail)
         {
-            var msg = new MailMessage
-            {
-                From = new MailAddress(former.FromAddress, former.DisplayName, Encoding.UTF8), Subject = mail.Subject, SubjectEncoding = Encoding.UTF8,
-                Body = mail.Body, BodyEncoding = Encoding.UTF8, IsBodyHtml = mail.IsHtml,
-                Priority = MailPriority.Normal
-            };
+            var msg = new MailMessage { From = new MailAddress(former.FromAddress, former.DisplayName, Encoding.UTF8), Subject = mail.Subject, SubjectEncoding = Encoding.UTF8, Body = mail.Body, BodyEncoding = Encoding.UTF8, IsBodyHtml = mail.IsHtml, Priority = MailPriority.Normal };
 
             if (mail.Address.IndexOf(',') > -1)
             {

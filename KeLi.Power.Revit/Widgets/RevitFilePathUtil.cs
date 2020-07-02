@@ -54,7 +54,6 @@ using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB;
 
 using KeLi.Power.Revit.Extensions;
-using KeLi.Power.Revit.Filters;
 using KeLi.Power.Revit.Properties;
 
 namespace KeLi.Power.Revit.Widgets

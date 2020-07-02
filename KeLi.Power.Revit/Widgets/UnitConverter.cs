@@ -1,13 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-
-using Autodesk.Revit.DB;
-
-using KeLi.Power.Revit.Filters;
-using KeLi.Power.Revit.Properties;
-
-/*
+﻿/*
  * MIT License
  *
  * Copyright(c) 2019 KeLi
@@ -30,6 +21,7 @@ using KeLi.Power.Revit.Properties;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 /*
              ,---------------------------------------------------,              ,---------,
         ,----------------------------------------------------------,          ,"        ,"|
@@ -41,7 +33,7 @@ using KeLi.Power.Revit.Properties;
      |  |                                                    |  |  |/----|`---=    |      |
      |  |              Author: KeLi                          |  |  |     |         |      |
      |  |              Email: kelistudy@163.com              |  |  |     |         |      |
-     |  |              Creation Time: 04/09/2020 07:08:41 PM |  |  |     |         |      |
+     |  |              Creation Time: 10/30/2019 07:08:41 PM |  |  |     |         |      |
      |  | C:\>_                                              |  |  |     | -==----'|      |
      |  |                                                    |  |  |   ,/|==== ooo |      ;
      |  |                                                    |  |  |  // |(((( [66]|    ,"
@@ -54,55 +46,85 @@ using KeLi.Power.Revit.Properties;
         /_==__==========__==_ooo__ooo=_/'   /___________,"
 */
 
+using System;
+
+using Autodesk.Revit.DB;
+
 namespace KeLi.Power.Revit.Widgets
 {
     /// <summary>
-    ///     Drawing utility.
+    ///     Unit utility.
     /// </summary>
-    public static class DrawingUtil
+    public static class UnitConverter
     {
         /// <summary>
-        ///     Exports drawing list.
+        ///     Millimeter to inch.
         /// </summary>
-        /// <param name="doc"></param>
-        /// <param name="drawingPath"></param>
-        /// <param name="setupName"></param>
-        public static void ExportDrawingList(this Document doc, string drawingPath, string setupName = null)
+        public const double MM_TO_INCH = 0.0393700787;
+
+        /// <summary>
+        ///     Millimeter to foot.
+        /// </summary>
+        public const double MM_TO_FT = 0.0032808399;
+
+        /// <summary>
+        ///     Converts feet unit value to mm unit value.
+        /// </summary>
+        /// <param name="feetNum"></param>
+        /// <returns></returns>
+        public static double Feet2Mm(this object feetNum)
         {
-            if (doc is null)
-                throw new ArgumentNullException(nameof(doc));
+            if (feetNum is null)
+                throw new ArgumentNullException(nameof(feetNum));
 
-            var viewSheets = doc.GetInstanceList<ViewSheet>();
+            var num = Convert.ToDouble(feetNum);
 
-            var drawings = viewSheets.Where(w => w.ViewType == ViewType.DrawingSheet);
+            return UnitUtils.Convert(num, DisplayUnitType.DUT_DECIMAL_FEET, DisplayUnitType.DUT_MILLIMETERS);
+        }
 
-            var viewIds = drawings.Select(s => s.Id).ToList();
+        /// <summary>
+        ///     Converts inch unit value to mm unit value.
+        /// </summary>
+        /// <param name="inchNum"></param>
+        /// <returns></returns>
+        public static double Inch2Mm(this object inchNum)
+        {
+            if (inchNum is null)
+                throw new ArgumentNullException(nameof(inchNum));
 
-            if (viewIds.Count == 0)
-                return;
+            var num = Convert.ToDouble(inchNum);
 
-            var setupNames = BaseExportOptions.GetPredefinedSetupNames(doc);
+            return UnitUtils.Convert(num, DisplayUnitType.DUT_DECIMAL_INCHES, DisplayUnitType.DUT_MILLIMETERS);
+        }
 
-            if (string.IsNullOrWhiteSpace(setupName))
-                setupName = setupNames.FirstOrDefault();
+        /// <summary>
+        ///     Converts mm unit value to feet unit value.
+        /// </summary>
+        /// <param name="mmNum"></param>
+        /// <returns></returns>
+        public static double Mm2Feet(this object mmNum)
+        {
+            if (mmNum is null)
+                throw new ArgumentNullException(nameof(mmNum));
 
-            var dwgOpts = DWGExportOptions.GetPredefinedOptions(doc, setupName);
+            var num = Convert.ToDouble(mmNum);
 
-            dwgOpts.MergedViews = true;
+            return UnitUtils.Convert(num, DisplayUnitType.DUT_MILLIMETERS, DisplayUnitType.DUT_DECIMAL_FEET);
+        }
 
-            var docName = Path.GetFileNameWithoutExtension(doc.PathName);
+        /// <summary>
+        ///     Converts mm unit value to inch unit value.
+        /// </summary>
+        /// <param name="mmNum"></param>
+        /// <returns></returns>
+        public static double Mm2Inch(this object mmNum)
+        {
+            if (mmNum is null)
+                throw new ArgumentNullException(nameof(mmNum));
 
-            doc.Export(drawingPath, string.Empty, viewIds, dwgOpts);
+            var num = Convert.ToDouble(mmNum);
 
-            var filePaths = Directory.GetFiles(drawingPath, "*.*");
-
-            foreach (var filePath in filePaths)
-            {
-                var newFilePath = filePath.Replace($"{docName}-{Resources.Draw} - ", string.Empty);
-
-                if (File.Exists(filePath))
-                    File.Move(filePath, newFilePath);
-            }
+            return UnitUtils.Convert(num, DisplayUnitType.DUT_MILLIMETERS, DisplayUnitType.DUT_DECIMAL_INCHES);
         }
     }
 }

@@ -54,8 +54,6 @@ using System.Reflection;
 
 using Autodesk.Revit.DB;
 
-using KeLi.Power.Revit.Filters;
-
 namespace KeLi.Power.Revit.Widgets
 {
     /// <summary>

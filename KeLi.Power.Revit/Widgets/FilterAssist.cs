@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MIT License
  *
  * Copyright(c) 2019 KeLi
@@ -33,7 +33,7 @@
      |  |                                                    |  |  |/----|`---=    |      |
      |  |              Author: KeLi                          |  |  |     |         |      |
      |  |              Email: kelistudy@163.com              |  |  |     |         |      |
-     |  |              Creation Time: 12/23/2019 13:08:20 PM |  |  |     |         |      |
+     |  |              Creation Time: 10/30/2019 07:08:41 PM |  |  |     |         |      |
      |  | C:\>_                                              |  |  |     | -==----'|      |
      |  |                                                    |  |  |   ,/|==== ooo |      ;
      |  |                                                    |  |  |  // |(((( [66]|    ,"
@@ -52,22 +52,13 @@ using System.Linq;
 
 using Autodesk.Revit.DB;
 
-using KeLi.Power.Revit.Builders;
-
-using static Autodesk.Revit.DB.SpatialElementBoundaryLocation;
-
-namespace KeLi.Power.Revit.Filters
+namespace KeLi.Power.Revit.Widgets
 {
     /// <summary>
-    ///     Elementy utility.
+    ///     Filter assist.
     /// </summary>
-    public static class ElementUtil
+    public static class FilterAssist
     {
-        /// <summary>
-        ///     Square foot to spaure meter.
-        /// </summary>
-        private const double FT2_TO_M2 = 0.092903;
-
         /// <summary>
         ///     Gets FamilySymbol list.
         /// </summary>
@@ -138,9 +129,10 @@ namespace KeLi.Power.Revit.Filters
         ///     Gets room list.
         /// </summary>
         /// <param name="doc"></param>
+        /// <param name="eps"></param>
         /// <param name="isValid"></param>
         /// <returns></returns>
-        public static List<SpatialElement> GetSpatialElementList(this Document doc, bool isValid = true)
+        public static List<SpatialElement> GetSpatialElementList(this Document doc, double eps = 1e-6, bool isValid = true)
         {
             if (doc is null)
                 throw new ArgumentNullException(nameof(doc));
@@ -148,7 +140,7 @@ namespace KeLi.Power.Revit.Filters
             var results = doc.GetInstanceList<SpatialElement>();
 
             if (isValid)
-                results = results.Where(w => w?.Location != null && w.Area > 1e-6).ToList();
+                results = results.Where(w => w?.Location != null && w.Area > eps).ToList();
 
             return results;
         }
@@ -206,154 +198,135 @@ namespace KeLi.Power.Revit.Filters
         }
 
         /// <summary>
-        ///     Gets the element's location point.
+        ///     Checkouts all elements in the document.
         /// </summary>
-        /// <param name="elm"></param>
-        /// <returns></returns>
-        public static XYZ GetLocationPoint<T>(this T elm) where T : Element
-        {
-            if (elm is null)
-                throw new ArgumentNullException(nameof(elm));
-
-            return elm.Location is LocationPoint pt ? pt.Point : throw new InvalidCastException(elm.Name);
-        }
-
-        /// <summary>
-        ///     Gets the element's location cuve.
-        /// </summary>
-        /// <param name="elm"></param>
-        /// <returns></returns>
-        public static Curve GetLocationCurve<T>(this T elm) where T : Element
-        {
-            if (elm is null)
-                throw new ArgumentNullException(nameof(elm));
-
-            return !(elm.Location is LocationCurve curve) ? throw new InvalidCastException(elm.Name) : curve.Curve;
-        }
-
-        /// <summary>
-        ///     Gets intersect element list.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="room"></param>
         /// <param name="doc"></param>
+        /// <param name="type"></param>
+        /// <param name="viewId"></param>
         /// <returns></returns>
-        public static List<T> GetIntersectElements<T>(this SpatialElement room, Document doc) where T : Element
+        public static List<Element> Checkout(this Document doc, FilterType type, ElementId viewId = null)
         {
-            if (room is null)
-                throw new ArgumentNullException(nameof(room));
-
             if (doc is null)
                 throw new ArgumentNullException(nameof(doc));
 
-            return room.GetIntersectElements(doc).Where(w => w is T).Cast<T>().ToList();
-        }
+            var filter = new FilteredElementCollector(doc);
 
-        /// <summary>
-        ///     Gets intersect element list.
-        /// </summary>
-        /// <param name="room"></param>
-        /// <param name="doc"></param>
-        /// <returns></returns>
-        public static List<Element> GetIntersectElements(this SpatialElement room, Document doc)
-        {
-            if (room is null)
-                throw new ArgumentNullException(nameof(room));
+            if (viewId != null)
+                filter = new FilteredElementCollector(doc, viewId);
 
-            if (doc is null)
-                throw new ArgumentNullException(nameof(doc));
-
-            var opt = new SpatialElementBoundaryOptions { SpatialElementBoundaryLocation = Center };
-
-            var calc = new SpatialElementGeometryCalculator(doc, opt);
-
-            var solid = calc.CalculateSpatialElementGeometry(room).GetGeometry();
-
-            var instFilter = new FilteredElementCollector(doc).WhereElementIsNotElementType();
-
-            var itstFilter = new ElementIntersectsSolidFilter(solid);
-
-            return instFilter.WherePasses(itstFilter).ToList();
-        }
-
-        /// <summary>
-        ///     Sets the element's color fill pattern.
-        /// </summary>
-        /// <param name="elm"></param>
-        /// <param name="fillPattern"></param>
-        /// <param name="doc"></param>
-        /// <param name="color"></param>
-        public static void SetColorFill(this Element elm, Element fillPattern, Document doc, Color color)
-        {
-            if (elm is null)
-                throw new ArgumentNullException(nameof(elm));
-
-            if (fillPattern is null)
-                throw new ArgumentNullException(nameof(fillPattern));
-
-            if (doc is null)
-                throw new ArgumentNullException(nameof(doc));
-
-            if (color is null)
-                throw new ArgumentNullException(nameof(color));
-
-            var graSetting = doc.ActiveView.GetElementOverrides(elm.Id);
-
-            graSetting.SetProjectionFillPatternId(fillPattern.Id);
-
-            graSetting.SetProjectionFillColor(color);
-
-            doc.ActiveView.SetElementOverrides(elm.Id, graSetting);
-        }
-
-        /// <summary>
-        ///     Gets the element's projection area.
-        /// </summary>
-        /// <param name="elm">A element</param>
-        /// <remarks>Returns projection area, that area unit is square meter.</remarks>
-        /// <exception cref="T:Autodesk.Revit.Exceptions.ArgumentNullException">The input element is invalid.</exception>
-        /// <returns>Returns projection area.</returns>
-        public static double GetShadowArea(this Element elm)
-        {
-            if (elm is null)
-                throw new ArgumentNullException(nameof(elm));
-
-            var areas = new List<double>();
-            var geo = elm.get_Geometry(new Options());
-
-            foreach (var instance in geo.Select(s => s as GeometryInstance))
+            switch (type)
             {
-                if (instance is null)
-                    continue;
+                case FilterType.Instance:
+                    return filter.WhereElementIsNotElementType().ToList();
 
-                foreach (var item in instance.GetInstanceGeometry())
-                {
-                    var solid = item as Solid;
+                case FilterType.Type:
+                    return filter.WhereElementIsElementType().ToList();
 
-                    if (null == solid || solid.Faces.Size <= 0)
-                        continue;
+                case FilterType.All:
+                    return filter.ToList();
 
-                    var plane = XYZ.BasisZ.CreatePlane(XYZ.Zero);
-
-                    ExtrusionAnalyzer analyzer;
-
-                    try
-                    {
-                        analyzer = ExtrusionAnalyzer.Create(solid, plane, XYZ.BasisZ);
-                    }
-                    catch
-                    {
-                        continue;
-                    }
-
-                    if (analyzer is null)
-                        continue;
-
-                    areas.Add(analyzer.GetExtrusionBase().Area * FT2_TO_M2);
-                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
-
-            return areas.Max();
         }
+
+        /// <summary>
+        ///     Gets the specified type of the element list.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="viewId"></param>
+        /// <returns></returns>
+        public static List<T> GetTypeList<T>(this Document doc, ElementId viewId = null) where T : Element
+        {
+            if (doc is null)
+                throw new ArgumentNullException(nameof(doc));
+
+            var filter = new FilteredElementCollector(doc);
+
+            if (viewId != null)
+                filter = new FilteredElementCollector(doc, viewId);
+
+            return filter.OfClass(typeof(T)).WhereElementIsElementType().Cast<T>().ToList();
+        }
+
+        /// <summary>
+        ///     Gets the specified type and category of the element list.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="category"></param>
+        /// <param name="viewId"></param>
+        /// <returns></returns>
+        public static List<T> GetTypeList<T>(this Document doc, BuiltInCategory category, ElementId viewId = null) where T : Element
+        {
+            if (doc is null)
+                throw new ArgumentNullException(nameof(doc));
+
+            var filter = new FilteredElementCollector(doc);
+
+            if (viewId != null)
+                filter = new FilteredElementCollector(doc, viewId);
+
+            return filter.OfCategory(category).WhereElementIsElementType().Cast<T>().ToList();
+        }
+
+        /// <summary>
+        ///     Gets the specified type of the element list.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="viewId"></param>
+        /// <returns></returns>
+        public static List<T> GetInstanceList<T>(this Document doc, ElementId viewId = null) where T : Element
+        {
+            if (doc is null)
+                throw new ArgumentNullException(nameof(doc));
+
+            var filter = new FilteredElementCollector(doc);
+
+            if (viewId != null)
+                filter = new FilteredElementCollector(doc, viewId);
+
+            return filter.OfClass(typeof(T)).WhereElementIsNotElementType().Cast<T>().ToList();
+        }
+
+        /// <summary>
+        ///     Gets the specified type and category of the element list.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="category"></param>
+        /// <param name="viewId"></param>
+        /// <returns></returns>
+        public static List<T> GetInstanceList<T>(this Document doc, BuiltInCategory category, ElementId viewId = null) where T : Element
+        {
+            if (doc is null)
+                throw new ArgumentNullException(nameof(doc));
+
+            var filter = new FilteredElementCollector(doc);
+
+            if (viewId != null)
+                filter = new FilteredElementCollector(doc, viewId);
+
+            return filter.OfCategory(category).WhereElementIsNotElementType().Cast<T>().ToList();
+        }
+    }
+
+    /// <summary>
+    ///     Filter type.
+    /// </summary>
+    public enum FilterType
+    {
+        /// <summary>
+        ///     Instance elements.
+        /// </summary>
+        Instance,
+
+        /// <summary>
+        ///     Type elements.
+        /// </summary>
+        Type,
+
+        /// <summary>
+        ///     All elements.
+        /// </summary>
+        All
     }
 }

@@ -33,7 +33,7 @@
      |  |                                                    |  |  |/----|`---=    |      |
      |  |              Author: KeLi                          |  |  |     |         |      |
      |  |              Email: kelistudy@163.com              |  |  |     |         |      |
-     |  |              Creation Time: 10/30/2019 07:08:41 PM |  |  |     |         |      |
+     |  |              Creation Time: 06/05/2020 02:02:00 AM |  |  |     |         |      |
      |  | C:\>_                                              |  |  |     | -==----'|      |
      |  |                                                    |  |  |   ,/|==== ooo |      ;
      |  |                                                    |  |  |  // |(((( [66]|    ,"
@@ -46,26 +46,89 @@
         /_==__==========__==_ooo__ooo=_/'   /___________,"
 */
 
-namespace KeLi.Power.Revit.Filters
+using System;
+
+using Autodesk.Revit.ApplicationServices;
+using Autodesk.Revit.Attributes;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
+
+namespace KeLi.Power.Revit.Framework
 {
     /// <summary>
-    ///     Calc type.
+    ///     Base command class.
     /// </summary>
-    public enum CalcType
+    [Transaction(TransactionMode.Manual)]
+    [Regeneration(RegenerationOption.Manual)]
+    public abstract class BaseCmd : IExternalCommand, IExternalCommandAvailability
     {
         /// <summary>
-        ///     Base face to calc.
+        ///     Application.
         /// </summary>
-        FaceNum,
+        protected Application _app;
 
         /// <summary>
-        ///     Base point on face to calc.
+        ///     Document.
         /// </summary>
-        FacePointNum,
+        protected Document _doc;
 
         /// <summary>
-        ///     Base point on solid to calc.
+        ///     UI aplication.
         /// </summary>
-        SolidPointNum
+        protected UIApplication _uiapp;
+
+        /// <summary>
+        ///     UI document.
+        /// </summary>
+        protected UIDocument _uidoc;
+
+        /// <summary>
+        ///     Executes command.
+        /// </summary>
+        /// <param name="commandData"></param>
+        /// <param name="message"></param>
+        /// <param name="elements"></param>
+        /// <returns></returns>
+        public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
+        {
+            try
+            {
+                _uiapp = commandData.Application;
+
+                _app = _uiapp.Application;
+
+                _uidoc = _uiapp.ActiveUIDocument;
+
+                _doc = _uidoc.Document;
+
+                Run(ref message, elements);
+
+                return Result.Succeeded;
+            }
+            catch (Exception e)
+            {
+                message = e.Message;
+
+                return Result.Failed;
+            }
+        }
+
+        /// <summary>
+        ///     If true, can excute button's command without opening document.
+        /// </summary>
+        /// <param name="applicationData"></param>
+        /// <param name="selectedCategories"></param>
+        /// <returns></returns>
+        public virtual bool IsCommandAvailable(UIApplication applicationData, CategorySet selectedCategories)
+        {
+            return true;
+        }
+
+        /// <summary>
+        ///     Runs sth.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="elements"></param>
+        public abstract void Run(ref string message, ElementSet elements);
     }
 }

@@ -51,14 +51,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Visual;
 
-using KeLi.Power.Revit.Filters;
+using KeLi.Power.Revit.Widgets;
 
-using static Autodesk.Revit.DB.DisplayUnitType;
-using static Autodesk.Revit.DB.Visual.UnifiedBitmap;
-
-using static KeLi.Power.Revit.Builders.PartBuilder.TextureAngle;
+using static KeLi.Power.Revit.Builders.TextureAngle;
 
 namespace KeLi.Power.Revit.Builders
 {
@@ -67,32 +63,6 @@ namespace KeLi.Power.Revit.Builders
     /// </summary>
     public static class PartBuilder
     {
-        /// <summary>
-        ///     Texture angle.
-        /// </summary>
-        public enum TextureAngle
-        {
-            /// <summary>
-            ///     Initializes angle.
-            /// </summary>
-            Rotation0 = 0,
-
-            /// <summary>
-            ///     Rotates 90 angle.
-            /// </summary>
-            Rotation90 = 90,
-
-            /// <summary>
-            ///     Rotates 180 angle.
-            /// </summary>
-            Rotation180 = 180,
-
-            /// <summary>
-            ///     Rotates 270 angle.
-            /// </summary>
-            Rotation270 = 270
-        }
-
         /// <summary>
         ///     Divide part list for element.
         /// </summary>
@@ -123,9 +93,7 @@ namespace KeLi.Power.Revit.Builders
                 throw new ArgumentException(nameof(radius));
 
             if (initAngle == Rotation90 || initAngle == Rotation270)
-            {
                 step = new[] { step[1], step[0] };
-            }
 
             var plane = Plane.CreateByNormalAndOrigin(XYZ.BasisZ, origin);
             var baseY = plane.Normal.CrossProduct(baseX);
@@ -202,8 +170,10 @@ namespace KeLi.Power.Revit.Builders
         /// <param name="wall"></param>
         /// <param name="step"></param>
         /// <param name="materialNames"></param>
+        /// <param name="lineHeight"></param>
         /// <param name="isHorizontal"></param>
-        public static void DividePartList(this Wall wall, double[] step, string[] materialNames, bool isHorizontal = true)
+        /// <param name="eps"></param>
+        public static void DividePartList(this Wall wall, double[] step, string[] materialNames, double lineHeight, bool isHorizontal = true, double eps = 1e-3)
         {
             if (wall is null)
                 throw new ArgumentNullException(nameof(wall));
@@ -214,7 +184,6 @@ namespace KeLi.Power.Revit.Builders
             if (materialNames is null)
                 throw new ArgumentNullException(nameof(materialNames));
 
-            const double lineHeight = 100;
             var line = (wall.Location as LocationCurve)?.Curve as Line;
             var lines = new List<Curve>();
 
@@ -256,14 +225,13 @@ namespace KeLi.Power.Revit.Builders
             }
 
             var opt = new Options { ComputeReferences = true, DetailLevel = ViewDetailLevel.Coarse };
-
             var ge = wall.get_Geometry(opt);
             var solid = ge.FirstOrDefault(f => f is Solid) as Solid;
 
             if (solid != null)
             {
-                var face = solid.Faces.Cast<PlanarFace>().FirstOrDefault(f => f.FaceNormal.AngleTo(wall.Orientation) < 1e-3);
-
+                var faces = solid.Faces.Cast<Face>().Where(w => w is PlanarFace).Cast<PlanarFace>().ToList();
+                var face = faces.FirstOrDefault(f => f.FaceNormal.AngleTo(wall.Orientation) < eps);
                 var doc = wall.Document;
                 var plane = SketchPlane.Create(doc, face.Reference);
                 var ids = PartUtils.GetAssociatedParts(doc, wall.Id, true, false).ToList();
@@ -308,127 +276,31 @@ namespace KeLi.Power.Revit.Builders
                 }
             }
         }
+    }
+
+    /// <summary>
+    ///     Texture angle.
+    /// </summary>
+    public enum TextureAngle
+    {
+        /// <summary>
+        ///     Initializes angle.
+        /// </summary>
+        Rotation0 = 0,
 
         /// <summary>
-        ///     Sets texture.
+        ///     Rotates 90 angle.
         /// </summary>
-        /// <param name="material"></param>
-        /// <param name="angle"></param>
-        /// <param name="offset"></param>
-        /// <param name="size"></param>
-        /// <param name="initAngle"></param>
-        public static void SetTexture(Material material, double angle, double[] offset, double[] size, TextureAngle initAngle)
-        {
-            var doc = material.Document;
-
-            if (offset == null || offset.Length == 0)
-                return;
-
-            if (size == null || size.Length == 0)
-                return;
-
-            angle += (int)initAngle;
-            angle %= 360;
-
-            using var editScope = new AppearanceAssetEditScope(doc);
-
-            var asset = editScope.Start(material.AppearanceAssetId);
-
-            if (asset[TextureWAngle] is AssetPropertyDouble angleProp && angle >= 0 && angle <= 360)
-                angleProp.Value = angle;
-
-            if (asset[TextureRealWorldOffsetX] is AssetPropertyDistance xOffsetProp)
-                xOffsetProp.Value = UnitUtils.Convert(offset[0], DUT_DECIMAL_FEET, xOffsetProp.DisplayUnitType);
-
-            if (asset[TextureRealWorldOffsetY] is AssetPropertyDistance yOffsetProp)
-                yOffsetProp.Value = UnitUtils.Convert(offset[1], DUT_DECIMAL_FEET, yOffsetProp.DisplayUnitType);
-
-            if (asset[TextureRealWorldScaleX] is AssetPropertyDistance xSizeProp)
-            {
-                var minXSize = UnitUtils.Convert(0.01, xSizeProp.DisplayUnitType, DUT_MILLIMETERS);
-
-                if (size[0] > minXSize)
-                    xSizeProp.Value = UnitUtils.Convert(size[0], DUT_DECIMAL_FEET, xSizeProp.DisplayUnitType);
-            }
-
-            if (asset[TextureRealWorldScaleY] is AssetPropertyDistance ySizeProp)
-            {
-                var minYSize = UnitUtils.Convert(0.01, ySizeProp.DisplayUnitType, DUT_MILLIMETERS);
-
-                if (size[1] > minYSize)
-                    ySizeProp.Value = UnitUtils.Convert(size[1], DUT_DECIMAL_FEET, ySizeProp.DisplayUnitType);
-            }
-
-            editScope.Commit(true);
-        }
+        Rotation90 = 90,
 
         /// <summary>
-        ///     Computes texture's initial angle.
+        ///     Rotates 180 angle.
         /// </summary>
-        /// <param name="baseX"></param>
-        /// <param name="tolerance"></param>
-        /// <returns></returns>
-        public static double ComputeTextureAngle(XYZ baseX, double tolerance = 1e-6)
-        {
-            var baseRadian = baseX.AngleTo(XYZ.BasisX);
-
-            // To compute min radian with x asix.
-            if (baseRadian >= Math.PI / 2)
-                baseRadian = Math.PI - baseRadian;
-
-            var result = 0d;
-
-            // 1st quadrant.
-            if (baseX.X > tolerance && baseX.Y > tolerance)
-                result = 90 - baseRadian * 180 / Math.PI;
-
-            // 2nd quadrant.
-            else if (baseX.X < -tolerance && baseX.Y > tolerance)
-                result = 270 + baseRadian * 180 / Math.PI;
-
-            // 3rd quadrant.
-            else if (baseX.X < -tolerance && baseX.Y < -tolerance)
-                result = 180 + baseRadian * 180 / Math.PI;
-
-            // 4th quadrant.
-            else if (baseX.X > tolerance && baseX.Y < -tolerance)
-                result = 90 + baseRadian * 180 / Math.PI;
-
-            // →
-            else if (baseX.X > tolerance && baseX.Y <= tolerance)
-                result = 90;
-
-            // ↓
-            else if (baseX.X <= tolerance && baseX.Y < -tolerance)
-                result = 180;
-
-            // ←
-            else if (baseX.X < -tolerance && baseX.Y <= tolerance)
-                result = 270;
-
-            // ↑ 
-            else if (baseX.X > tolerance && baseX.Y <= tolerance)
-                result = 0;
-
-            return result;
-        }
+        Rotation180 = 180,
 
         /// <summary>
-        ///     Sets texture's path.
+        ///     Rotates 270 angle.
         /// </summary>
-        /// <param name="material"></param>
-        /// <param name="texturePath"></param>
-        public static void SetTexturePath(this Material material, string texturePath)
-        {
-            var doc = material.Document;
-            using var editScope = new AppearanceAssetEditScope(doc);
-            var editableAsset = editScope.Start(material.AppearanceAssetId);
-            var bitmapAssist = editableAsset[UnifiedbitmapBitmap];
-
-            if (bitmapAssist is AssetPropertyString path && path.IsValidValue(texturePath))
-                path.Value = texturePath;
-
-            editScope.Commit(true);
-        }
+        Rotation270 = 270
     }
 }

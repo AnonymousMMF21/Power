@@ -61,8 +61,9 @@ namespace KeLi.Power.Revit.Builders
         ///     Creates a new plane.
         /// </summary>
         /// <param name="curve"></param>
+        /// <param name="eps"></param>
         /// <returns></returns>
-        public static Plane CreatePlane(this Curve curve)
+        public static Plane CreatePlane(this Curve curve, double eps = 1e-6)
         {
             if (curve is null)
                 throw new ArgumentNullException(nameof(curve));
@@ -72,10 +73,10 @@ namespace KeLi.Power.Revit.Builders
             var line = Line.CreateBound(p0, p1);
             var refAxis = XYZ.BasisZ;
 
-            if (Math.Abs(line.Direction.AngleTo(XYZ.BasisZ)) < 1e-6)
+            if (Math.Abs(line.Direction.AngleTo(XYZ.BasisZ)) < eps)
                 refAxis = XYZ.BasisX;
 
-            else if (Math.Abs(line.Direction.AngleTo(-XYZ.BasisZ)) < 1e-6)
+            else if (Math.Abs(line.Direction.AngleTo(-XYZ.BasisZ)) < eps)
                 refAxis = XYZ.BasisX;
 
             var normal = line.Direction.CrossProduct(refAxis).Normalize();

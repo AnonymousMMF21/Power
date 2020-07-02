@@ -55,7 +55,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 
-namespace KeLi.Power.Revit.Information
+namespace KeLi.Power.Revit.Widgets
 {
     /// <summary>
     ///     Parameter utility.
@@ -283,12 +283,7 @@ namespace KeLi.Power.Revit.Information
                 if (items[0] != "PARAM")
                     continue;
 
-                var param = new ElementParameter
-                {
-                    Guid = items[1], ParamName = items[2], DataType = items[3],
-                    DataCatetory = items[4], GroupId = items[5], Visible = Convert.ToBoolean(Convert.ToInt32(items[6])),
-                    Description = items[7], CanEdit = Convert.ToBoolean(Convert.ToInt32(items[8]))
-                };
+                var param = new ElementParameter { Guid = items[1], ParamName = items[2], DataType = items[3], DataCatetory = items[4], GroupId = items[5], Visible = Convert.ToBoolean(Convert.ToInt32(items[6])), Description = items[7], CanEdit = Convert.ToBoolean(Convert.ToInt32(items[8])) };
 
                 elmParms.Add(param);
             }
@@ -297,5 +292,84 @@ namespace KeLi.Power.Revit.Information
 
             return results;
         }
+    }
+
+    /// <summary>
+    ///     Element parameter.
+    /// </summary>
+    public class ElementParameter
+    {
+        /// <summary>
+        ///     Returns the guid of the element's parameter.
+        /// </summary>
+        public string Guid { get; set; }
+
+        /// <summary>
+        ///     Returns the name of the element's parameter.
+        /// </summary>
+        public string ParamName { get; set; }
+
+        /// <summary>
+        ///     Returns the data type of the element's parameter.
+        /// </summary>
+        public string DataType { get; set; }
+
+        /// <summary>
+        ///     Returns the data category of the element's parameter.
+        /// </summary>
+        public string DataCatetory { get; set; }
+
+        /// <summary>
+        ///     Returns the group id of the element's parameter.
+        /// </summary>
+        public string GroupId { get; set; }
+
+        /// <summary>
+        ///     Returns the visible of element's parameter.
+        /// </summary>
+        public bool Visible { get; set; }
+
+        /// <summary>
+        ///     Returns the description of element's parameter.
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        ///     Returns the can edit of element's parameter.
+        /// </summary>
+        public bool CanEdit { get; set; }
+    }
+
+    /// <summary>
+    ///     Group parameter.
+    /// </summary>
+    public class GroupParameter
+    {
+        /// <summary>
+        ///     Initializing parameter's group.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="groupName"></param>
+        public GroupParameter(string id, string groupName)
+        {
+            Id = id ?? throw new ArgumentNullException(nameof(id));
+            GroupName = groupName ?? throw new ArgumentNullException(nameof(groupName));
+            Params = new List<ElementParameter>();
+        }
+
+        /// <summary>
+        ///     Returns the id of the parameter's group.
+        /// </summary>
+        public string Id { get; set; }
+
+        /// <summary>
+        ///     Returns the name of the parameter's group.
+        /// </summary>
+        public string GroupName { get; set; }
+
+        /// <summary>
+        ///     Returns the parameter list of the parameter's group.
+        /// </summary>
+        public List<ElementParameter> Params { get; set; }
     }
 }

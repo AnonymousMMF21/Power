@@ -53,7 +53,6 @@ using System.Linq;
 using Autodesk.Revit.DB;
 
 using KeLi.Power.Revit.Extensions;
-using KeLi.Power.Revit.Filters;
 using KeLi.Power.Revit.Widgets;
 
 namespace KeLi.Power.Revit.Builders
@@ -212,7 +211,7 @@ namespace KeLi.Power.Revit.Builders
     }
 
     /// <summary>
-    ///     Override load option
+    ///     Overrides load option
     /// </summary>
     public class OverrideLoadOption : IFamilyLoadOptions
     {

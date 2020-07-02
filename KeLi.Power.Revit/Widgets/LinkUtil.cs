@@ -56,8 +56,6 @@ using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 
-using KeLi.Power.Revit.Filters;
-
 using static Autodesk.Revit.DB.WorksetConfigurationOption;
 
 namespace KeLi.Power.Revit.Widgets
@@ -85,7 +83,6 @@ namespace KeLi.Power.Revit.Widgets
                 throw new ArgumentNullException(nameof(localPath));
 
             var serverPathl = new FilePath(serverPath);
-
             var localPathl = new FilePath(localPath);
 
             WorksharingUtils.CreateNewLocal(serverPathl, localPathl);
