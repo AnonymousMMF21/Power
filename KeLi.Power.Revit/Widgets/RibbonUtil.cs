@@ -76,9 +76,7 @@ namespace KeLi.Power.Revit.Widgets
                 throw new InvalidCastException();
 
             result.ToolTip = pbd.ToolTip;
-
             result.LongDescription = pbd.LongDescription;
-
             result.LargeImage = pbd.LargeImage;
 
             return result;
@@ -133,9 +131,7 @@ namespace KeLi.Power.Revit.Widgets
                 throw new InvalidCastException();
 
             result.ToolTip = pbd.ToolTip;
-
             result.LongDescription = pbd.LongDescription;
-
             result.LargeImage = pbd.LargeImage;
 
             foreach (var pbdl in pbds)
@@ -146,9 +142,7 @@ namespace KeLi.Power.Revit.Widgets
                     continue;
 
                 btn.ToolTip = pbdl.ToolTip;
-
                 btn.LongDescription = pbdl.LongDescription;
-
                 btn.LargeImage = pbdl.LargeImage;
             }
 
@@ -180,9 +174,7 @@ namespace KeLi.Power.Revit.Widgets
                 throw new InvalidCastException();
 
             result.ToolTip = pbd.ToolTip;
-
             result.LongDescription = pbd.LongDescription;
-
             result.LargeImage = pbd.LargeImage;
 
             foreach (var pbdl in pbds)
@@ -193,9 +185,7 @@ namespace KeLi.Power.Revit.Widgets
                     continue;
 
                 btn.ToolTip = pbdl.ToolTip;
-
                 btn.LongDescription = pbdl.LongDescription;
-
                 btn.LargeImage = pbdl.LargeImage;
             }
 

@@ -53,7 +53,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 
-namespace KeLi.Power.Revit.Information
+namespace KeLi.Power.Revit.Widgets
 {
     /// <summary>
     ///     Extend data utility.
@@ -322,5 +322,87 @@ namespace KeLi.Power.Revit.Information
 
             return guids.Select(Schema.Lookup).FirstOrDefault(f => f.SchemaName == schemaName);
         }
+    }
+
+    /// <summary>
+    ///     The field info of element's schema.
+    /// </summary>
+    public class FieldInfo
+    {
+        /// <summary>
+        ///     Inits list type or simple type field info.
+        /// </summary>
+        /// <param name="fieldName"></param>
+        /// <param name="dataType"></param>
+        /// <param name="fieldType"></param>
+        public FieldInfo(string fieldName, Type dataType, SchemaFieldType fieldType)
+        {
+            FieldName = fieldName ?? throw new ArgumentNullException(nameof(fieldName));
+            DataType = dataType ?? throw new ArgumentNullException(nameof(dataType));
+            FieldType = fieldType;
+        }
+
+        /// <summary>
+        ///     Inits dictionary type field info.
+        /// </summary>
+        /// <param name="fieldName"></param>
+        /// <param name="keyType"></param>
+        /// <param name="valueType"></param>
+        public FieldInfo(string fieldName, Type keyType, Type valueType)
+        {
+            FieldName = fieldName ?? throw new ArgumentNullException(nameof(fieldName));
+
+            KeyType = keyType ?? throw new ArgumentNullException(nameof(keyType));
+
+            ValueType = valueType ?? throw new ArgumentNullException(nameof(valueType));
+
+            FieldType = SchemaFieldType.Dictionary;
+        }
+
+        /// <summary>
+        ///     Name of the field.
+        /// </summary>
+        public string FieldName { get; set; }
+
+        /// <summary>
+        ///     Data type of simple or list field.
+        /// </summary>
+        public Type DataType { get; set; }
+
+        /// <summary>
+        ///     Key type of dictionary field.
+        /// </summary>
+        public Type KeyType { get; set; }
+
+        /// <summary>
+        ///     Value type of dictionary field.
+        /// </summary>
+        public Type ValueType { get; set; }
+
+        /// <summary>
+        ///     SchemaFieldType of the field.
+        /// </summary>
+        public SchemaFieldType FieldType { get; set; }
+    }
+
+    /// <summary>
+    ///     Filed type.
+    /// </summary>
+    public enum SchemaFieldType
+    {
+        /// <summary>
+        ///     Simple type.
+        /// </summary>
+        Simple,
+
+        /// <summary>
+        ///     List type.
+        /// </summary>
+        List,
+
+        /// <summary>
+        ///     Dictionary type.
+        /// </summary>
+        Dictionary
     }
 }

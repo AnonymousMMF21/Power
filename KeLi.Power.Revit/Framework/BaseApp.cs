@@ -50,7 +50,7 @@ using System;
 
 using Autodesk.Revit.UI;
 
-namespace KeLi.Power.Revit.Widgets
+namespace KeLi.Power.Revit.Framework
 {
     /// <summary>
     ///     Base external application class.

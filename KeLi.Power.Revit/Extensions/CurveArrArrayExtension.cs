@@ -16,8 +16,9 @@ namespace KeLi.Power.Revit.Extensions
         ///     Resets the family symbol profile's location to zero point.
         /// </summary>
         /// <param name="profile"></param>
+        /// <param name="eps"></param>
         /// <returns></returns>
-        public static CurveArrArray ResetCurveArrArray(this CurveArrArray profile)
+        public static CurveArrArray ResetCurveArrArray(this CurveArrArray profile, double eps = 1e-2)
         {
             if (profile is null)
                 throw new ArgumentNullException(nameof(profile));
@@ -35,7 +36,7 @@ namespace KeLi.Power.Revit.Extensions
 
                 foreach (var line in lines.Cast<Line>())
                 {
-                    if (line.Length < 1e-2)
+                    if (line.Length < eps)
                         throw new InvalidDataException(line.ToString());
 
                     var pt1 = line.GetEndPoint(0) - location;

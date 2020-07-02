@@ -52,8 +52,8 @@ using System.Linq;
 
 using Autodesk.Revit.DB;
 
-using KeLi.Power.Revit.Filters;
 using KeLi.Power.Revit.Properties;
+using KeLi.Power.Revit.Widgets;
 
 namespace KeLi.Power.Revit.Builders
 {
@@ -69,6 +69,12 @@ namespace KeLi.Power.Revit.Builders
         /// <param name="sweeps"></param>
         public static void CreateWallSweep(this Wall wall, List<BeltInfo> sweeps)
         {
+            if (wall is null)
+                return;
+
+            if (sweeps == null || sweeps.Count == 0)
+                return;
+
             var doc = wall.Document;
             var symbols = doc.GetTypeList<FamilySymbol>();
             var materials = doc.GetInstanceList<Material>();
@@ -200,6 +206,15 @@ namespace KeLi.Power.Revit.Builders
         /// <param name="doc"></param>
         public static void CreateWallBelt(this Document doc, ElementId wallTypeId, BeltData sweep)
         {
+            if (doc is null)
+                return;
+
+            if (wallTypeId is null)
+                return;
+
+            if (sweep is null)
+                return;
+
             if (doc.GetElement(wallTypeId) is WallType wallType)
             {
                 var cs = wallType.GetCompoundStructure();

@@ -60,22 +60,12 @@ namespace KeLi.Power.Tool.Security
         /// <summary>
         ///     The secret key.
         /// </summary>
-        private static readonly byte[] Keys =
-        {
-            0x12, 0x34, 0x56,
-            0x78, 0x90, 0xAB,
-            0xCD, 0xEF
-        };
+        private static readonly byte[] Keys = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
 
         /// <summary>
         ///     The vectors
         /// </summary>
-        private static readonly byte[] Ivs =
-        {
-            0xEF, 0xCD, 0xAB,
-            0x90, 0x78, 0x56,
-            0x34, 0x12
-        };
+        private static readonly byte[] Ivs = { 0xEF, 0xCD, 0xAB, 0x90, 0x78, 0x56, 0x34, 0x12 };
 
         /// <summary>
         ///     Encrypts the content.

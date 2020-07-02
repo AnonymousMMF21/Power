@@ -3,8 +3,8 @@ using System.Linq;
 
 using Autodesk.Revit.DB;
 
-using KeLi.Power.Revit.Filters;
 using KeLi.Power.Revit.Properties;
+using KeLi.Power.Revit.Widgets;
 
 namespace KeLi.Power.Revit.Extensions
 {
@@ -13,20 +13,6 @@ namespace KeLi.Power.Revit.Extensions
     /// </summary>
     public static class ModelCurveExtension
     {
-        /// <summary>
-        ///     Sets ModelCurve list's style.
-        /// </summary>
-        public static void SetModelCurveList(this IEnumerable<ModelCurve> modelCurves, string lineName = null, Color color = null)
-        {
-            if (modelCurves is null)
-                return;
-
-            if (!modelCurves.ToList().Any())
-                return;
-
-            modelCurves.ToList().ForEach(f => f.SetModelCurve(lineName, color));
-        }
-
         /// <summary>
         ///     Sets ModelCurve's style.
         /// </summary>

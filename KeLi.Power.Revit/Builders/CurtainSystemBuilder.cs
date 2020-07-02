@@ -52,8 +52,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 
 using KeLi.Power.Revit.Extensions;
-using KeLi.Power.Revit.Filters;
-using KeLi.Power.Revit.Geometry;
+using KeLi.Power.Revit.Widgets;
 
 using static Autodesk.Revit.DB.BuiltInParameter;
 using static Autodesk.Revit.DB.Structure.StructuralType;
@@ -70,11 +69,11 @@ namespace KeLi.Power.Revit.Builders
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="profile"></param>
-        /// <param name="lvlId"></param>
+        /// <param name="lvl"></param>
         /// <param name="normal"></param>
         /// <param name="typeName"></param>
         /// <returns></returns>
-        public static CurtainSystem CreateCurtainSystem(Document doc, CurveArrArray profile, ElementId lvlId, XYZ normal, string typeName = null)
+        public static CurtainSystem CreateCurtainSystem(this Document doc, CurveArrArray profile, Level lvl, XYZ normal, string typeName = null)
         {
             if (normal is null)
                 throw new NullReferenceException(nameof(normal));
@@ -86,16 +85,15 @@ namespace KeLi.Power.Revit.Builders
             var fdoc = doc.CreateExtrusion(profile, normal.CreatePlane(XYZ.Zero), 100);
             var symbol = doc.NewLoadFamily(fdoc);
             var location = pts.FirstOrDefault();
-            var lvl = doc.GetElement(lvlId) as Level;
             var instance = doc.Create.NewFamilyInstance(location, symbol, lvl, NonStructural);
 
             doc.Regenerate();
 
             // The instance has thickness.
-            var faces = instance.GetFaceList(-normal).ToFaceArray();
+            var faces = instance.GetFaceList(6, -normal).ToFaceArray();
 
             var result = doc.CreateCurtainSystem(faces, typeName);
-
+            
             doc.Delete(instance.Id);
             doc.Delete(symbol.Family.Id);
 
