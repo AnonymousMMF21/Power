@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using KeLi.Power.Converter.Serializations;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace KeLi.Power.ConverterTests.Serializations
 {

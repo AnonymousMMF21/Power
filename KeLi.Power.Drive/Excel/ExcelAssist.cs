@@ -54,6 +54,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+using KeLi.Power.Converter.Collections;
+
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 
